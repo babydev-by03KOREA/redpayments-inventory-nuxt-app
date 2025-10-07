@@ -49,7 +49,17 @@ export function useInventory(q: Ref<string>, mode: Ref<'code' | 'barcode'> = ref
         for (const it of items.value) if (!map.has(it.euSize)) map.set(it.euSize, { eu: it.euSize, au: it.auSize, key: it.euSize })
         return Array.from(map.values()).sort((a, b) => Number(a.eu) - Number(b.eu))
     })
-    const colors = computed(() => Array.from(new Set(items.value.map(v => v.color))))
+    const colors = computed(() => {
+        const set = new Set<string>()
+        for (const it of items.value) {
+            const c = (it.color ?? '').trim()
+            if (c) set.add(c)
+        }
+        // A~Z 정렬 (대소문자 무시, 공백 제거)
+        return Array.from(set).sort((a, b) =>
+            a.localeCompare(b, 'en', { sensitivity: 'base' })
+        )
+    })
     const matrix = computed(() => {
         const m = new Map<string, Map<string, StockItem>>()
         for (const it of items.value) {
